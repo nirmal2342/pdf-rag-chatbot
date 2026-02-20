@@ -1,74 +1,105 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import "./App.css";
 
 function App() {
 
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const messagesEndRef = useRef(null);
 
-  const askQuestion = async () => {
+  // Auto scroll
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    if (!question) return;
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const sendMessage = async () => {
+
+    if (!input.trim()) return;
+
+    const userMessage = {
+      sender: "user",
+      text: input
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+
+    setInput("");
 
     try {
 
       const response = await axios.post(
         "http://127.0.0.1:8000/chat",
         {
-          question: question
+          question: input
         }
       );
 
-      setAnswer(response.data.answer);
+      const botMessage = {
+        sender: "bot",
+        text: response.data.answer
+      };
+
+      setMessages(prev => [...prev, botMessage]);
 
     } catch (error) {
 
-      console.error(error);
-      setAnswer("Error getting response");
+      const botMessage = {
+        sender: "bot",
+        text: "Error getting response"
+      };
 
+      setMessages(prev => [...prev, botMessage]);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      sendMessage();
     }
   };
 
   return (
 
-    <div style={{ padding: "40px" }}>
+    <div className="chat-container">
 
-      <h1>PDF Chatbot</h1>
+      <div className="chat-header">
+        PDF Chatbot
+      </div>
 
-      <input
-        type="text"
-        placeholder="Ask your question..."
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        style={{
-          width: "400px",
-          padding: "10px",
-          fontSize: "16px"
-        }}
-      />
+      <div className="chat-body">
 
-      <br /><br />
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`message ${msg.sender}`}
+          >
+            {msg.text}
+          </div>
+        ))}
 
-      <button
-        onClick={askQuestion}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px"
-        }}
-      >
-        Ask
-      </button>
+        <div ref={messagesEndRef} />
 
-      <br /><br />
+      </div>
 
-      <h3>Answer:</h3>
+      <div className="chat-footer">
 
-      <div style={{
-        width: "600px",
-        padding: "10px",
-        border: "1px solid gray"
-      }}>
-        {answer}
+        <input
+          type="text"
+          placeholder="Ask something..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+        />
+
+        <button onClick={sendMessage}>
+          Send
+        </button>
+
       </div>
 
     </div>
