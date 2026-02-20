@@ -7,6 +7,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   const messagesEndRef = useRef(null);
 
@@ -16,18 +17,20 @@ function App() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, loading]);
 
   const sendMessage = async () => {
 
     if (!input.trim()) return;
 
-    const userMessage = {
+    const question = input;
+
+    const userMsg = {
       sender: "user",
-      text: input
+      text: question
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMsg]);
 
     setInput("");
     setLoading(true);
@@ -36,21 +39,24 @@ function App() {
 
       const res = await axios.post(
         "http://127.0.0.1:8000/chat",
-        { question: input }
+        { question }
       );
 
-      const botMessage = {
+      const botMsg = {
         sender: "bot",
         text: res.data.answer
       };
 
-      setMessages(prev => [...prev, botMessage]);
+      setMessages(prev => [...prev, botMsg]);
 
     } catch {
 
       setMessages(prev => [
         ...prev,
-        { sender: "bot", text: "Error getting response." }
+        {
+          sender: "bot",
+          text: "Error getting response"
+        }
       ]);
 
     }
@@ -64,7 +70,7 @@ function App() {
 
   return (
 
-    <div className="app">
+    <div className={darkMode ? "app dark" : "app light"}>
 
       <div className="chat-card">
 
@@ -72,18 +78,20 @@ function App() {
 
         <div className="header">
 
-          <div className="logo">
-            ✦
+          <div className="header-left">
+            <div className="logo">✦</div>
+            <div>
+              <div className="title">PDF Chatbot</div>
+              <div className="subtitle">AI Assistant</div>
+            </div>
           </div>
 
-          <div>
-            <div className="title">PDF Chatbot</div>
-            <div className="subtitle">AI Assistant</div>
-          </div>
-
-          <div className="spacer" />
-
-          <div className="theme-btn">☀</div>
+          <button
+            className="theme-btn"
+            onClick={() => setDarkMode(!darkMode)}
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
 
         </div>
 
@@ -100,8 +108,7 @@ function App() {
               <h2>How can I help you today?</h2>
 
               <p>
-                I can answer questions about your PDF documents.
-                Just type your query below.
+                Ask questions about your PDF document.
               </p>
 
             </div>
@@ -110,16 +117,35 @@ function App() {
 
           {messages.map((msg, i) => (
 
-            <div key={i} className={`msg ${msg.sender}`}>
+            <div
+              key={i}
+              className={`message-row ${msg.sender}`}
+            >
 
-              {msg.text}
+              <div className={`bubble ${msg.sender}`}>
+                {msg.text}
+              </div>
 
             </div>
 
           ))}
 
+          {/* Typing indicator */}
+
           {loading && (
-            <div className="msg bot">Typing...</div>
+
+            <div className="message-row bot">
+
+              <div className="bubble bot typing">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+              </div>
+
+            </div>
+
           )}
 
           <div ref={messagesEndRef} />
@@ -150,6 +176,7 @@ function App() {
       </div>
 
     </div>
+
   );
 }
 
