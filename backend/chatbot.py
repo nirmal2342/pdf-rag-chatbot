@@ -4,7 +4,7 @@ import google.generativeai as genai
 from sentence_transformers import SentenceTransformer
 
 # Configure Gemini API
-genai.configure(api_key="YOUR_GEMINI_API_KEY")
+genai.configure(api_key="AIzaSyDtu58aovMgJlw8tieWES1wJLikpT1cVl8")
 
 gemini_model = genai.GenerativeModel("gemini-2.5-flash")
 
