@@ -1,10 +1,16 @@
 import faiss
 import pickle
 import google.generativeai as genai
+import os
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 
+load_dotenv()
+
+api_key = os.getenv("GOOGLE_API_KEY")
+
 # Configure Gemini API
-genai.configure(api_key="AIzaSyDtu58aovMgJlw8tieWES1wJLikpT1cVl8")
+genai.configure(api_key=api_key)
 
 gemini_model = genai.GenerativeModel("gemini-2.5-flash")
 
