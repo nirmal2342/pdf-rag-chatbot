@@ -8,11 +8,25 @@ function App() {
 
   const askQuestion = async () => {
 
-    const res = await axios.post("http://127.0.0.1:8000/chat", {
-      question: question
-    });
+    if (!question) return;
 
-    setAnswer(res.data.answer);
+    try {
+
+      const response = await axios.post(
+        "http://127.0.0.1:8000/chat",
+        {
+          question: question
+        }
+      );
+
+      setAnswer(response.data.answer);
+
+    } catch (error) {
+
+      console.error(error);
+      setAnswer("Error getting response");
+
+    }
   };
 
   return (
@@ -23,15 +37,25 @@ function App() {
 
       <input
         type="text"
+        placeholder="Ask your question..."
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
-        placeholder="Ask question..."
-        style={{ width: "400px", padding: "10px" }}
+        style={{
+          width: "400px",
+          padding: "10px",
+          fontSize: "16px"
+        }}
       />
 
       <br /><br />
 
-      <button onClick={askQuestion}>
+      <button
+        onClick={askQuestion}
+        style={{
+          padding: "10px 20px",
+          fontSize: "16px"
+        }}
+      >
         Ask
       </button>
 
@@ -39,9 +63,16 @@ function App() {
 
       <h3>Answer:</h3>
 
-      <p>{answer}</p>
+      <div style={{
+        width: "600px",
+        padding: "10px",
+        border: "1px solid gray"
+      }}>
+        {answer}
+      </div>
 
     </div>
+
   );
 }
 
