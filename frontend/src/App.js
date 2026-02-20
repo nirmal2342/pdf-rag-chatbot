@@ -7,7 +7,6 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
 
   const messagesEndRef = useRef(null);
 
@@ -17,7 +16,7 @@ function App() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, loading]);
+  }, [messages]);
 
   const sendMessage = async () => {
 
@@ -29,42 +28,23 @@ function App() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+
     setInput("");
     setLoading(true);
 
     try {
 
-      const response = await axios.post(
+      const res = await axios.post(
         "http://127.0.0.1:8000/chat",
         { question: input }
       );
 
-      // Typing animation simulation
-      const fullText = response.data.answer;
-      let currentText = "";
-
       const botMessage = {
         sender: "bot",
-        text: ""
+        text: res.data.answer
       };
 
       setMessages(prev => [...prev, botMessage]);
-
-      for (let i = 0; i < fullText.length; i++) {
-
-        currentText += fullText[i];
-
-        await new Promise(resolve => setTimeout(resolve, 10));
-
-        setMessages(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            sender: "bot",
-            text: currentText
-          };
-          return updated;
-        });
-      }
 
     } catch {
 
@@ -78,87 +58,98 @@ function App() {
     setLoading(false);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKey = (e) => {
     if (e.key === "Enter") sendMessage();
   };
 
   return (
 
-    <div className={darkMode ? "app dark" : "app"}>
+    <div className="app">
 
-      <div className="chat-container">
+      <div className="chat-card">
 
-        <div className="chat-header">
+        {/* Header */}
 
-          <span>PDF Chatbot</span>
+        <div className="header">
 
-          <button
-            className="theme-toggle"
-            onClick={() => setDarkMode(!darkMode)}
-          >
-            {darkMode ? "☀️" : "🌙"}
-          </button>
+          <div className="logo">
+            ✦
+          </div>
+
+          <div>
+            <div className="title">PDF Chatbot</div>
+            <div className="subtitle">AI Assistant</div>
+          </div>
+
+          <div className="spacer" />
+
+          <div className="theme-btn">☀</div>
 
         </div>
 
-        <div className="chat-body">
+        {/* Body */}
 
-          {messages.map((msg, index) => (
+        <div className="body">
 
-            <div key={index} className={`message ${msg.sender}`}>
+          {messages.length === 0 && (
 
-              <div className="avatar">
-                {msg.sender === "user" ? "🧑" : "🤖"}
-              </div>
+            <div className="welcome">
 
-              <div className="bubble">
-                {msg.text}
-              </div>
+              <div className="bot-icon">🤖</div>
+
+              <h2>How can I help you today?</h2>
+
+              <p>
+                I can answer questions about your PDF documents.
+                Just type your query below.
+              </p>
+
+            </div>
+
+          )}
+
+          {messages.map((msg, i) => (
+
+            <div key={i} className={`msg ${msg.sender}`}>
+
+              {msg.text}
 
             </div>
 
           ))}
 
           {loading && (
-
-            <div className="message bot">
-
-              <div className="avatar">🤖</div>
-
-              <div className="bubble typing">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-
-            </div>
-
+            <div className="msg bot">Typing...</div>
           )}
 
           <div ref={messagesEndRef} />
 
         </div>
 
-        <div className="chat-footer">
+        {/* Input */}
+
+        <div className="input-area">
 
           <input
-            type="text"
-            placeholder="Send a message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKey}
+            placeholder="Ask something..."
           />
 
           <button onClick={sendMessage}>
-            Send
+            ➤
           </button>
 
+        </div>
+
+        <div className="footer">
+          AI can make mistakes. Please verify important information.
         </div>
 
       </div>
 
     </div>
-
   );
 }
 
